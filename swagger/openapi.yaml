@@ -1,0 +1,476 @@
+openapi: "3.1.0"
+info:
+  title: Trees API
+  version: 1.0.0
+
+servers:
+  - url: http://backend.vm1.test
+    description: VM1 backend
+  - url: http://backend.vm2.test
+    description: VM2 backend
+  - url: http://backend.vm3.test
+    description: VM3 backend
+  - url: http://backend.vm4.test
+    description: VM4 backend
+  - url: http://backend.vm5.test
+    description: VM5 backend
+
+paths:
+  /api/counties:
+    get:
+      tags:
+       - Counties
+      summary: A megye listájának lekérése
+      description: |
+        Visszaadja az összes megye adatait a minta szerint.
+      responses:
+        '200':
+          description: Megyék listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CountyResource'
+              example:
+                data:
+                  - id: 1
+                    name: Bács-Kiskun
+                    trees:
+                      - id: 8
+                        species: kocsányos tölgy
+                        circumference: 657
+                        settlement: Hetényegyháza
+                        year: 2003
+                      - id: 52
+                        species: fűz
+                        circumference: 709
+                        settlement: Gemenc
+                        year: 2010
+                  - id: 2
+                    name: Baranya                                        
+                    trees:
+                      - id: 3
+                        species: közönséges bükk
+                        circumference: 423
+                        settlement: Vásárosbéc
+                        year: 2009
+    post:
+      tags:
+       - Counties
+      summary: Új megye létrehozása
+      description: |
+        A JSON-ként kapott adatokat validálja, majd eltárolja az adatbázisba.        
+        A létrehozott új rekordot adja is vissza a minta szerint!
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/County'
+            example:
+              name: Képzeletbeli
+      responses:
+        '201':
+          description: megye létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CountyResource'
+              example:
+                data:
+                  id: 20
+                  name: Képzeletbeli                  
+                  trees: []
+
+  /api/counties/{county}:
+    get:
+      tags:
+       - Counties
+      summary: Egy adott megye lekérése
+      description: |
+        A megye azonosítója alapján keresse meg a megfelelő rekordot,
+        és adja vissza az adatokat a minta szerint.
+      parameters:
+        - name: county
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Egy adott megye
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CountyResource'
+              example:
+                data:
+                  id: 1
+                  name: Bács-Kiskun
+                  trees:
+                    - id: 8
+                      species: kocsányos tölgy
+                      circumference: 657
+                      settlement: Hetényegyháza
+                      year: 2003
+                    - id: 52
+                      species: fűz
+                      circumference: 709
+                      settlement: Gemenc
+                      year: 2010                                         
+    put:
+      tags:
+       - Counties
+      summary: Egy adott megye frissítése
+      
+      description: |
+        A JSON-ként kapott adatokat validálja, majd teljes egészében cserélje le
+        az adatbázisban található adatokat.
+        
+        A módosított rekordot adja is vissza a minta szerint!        
+      parameters:
+        - name: county
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/County'
+            example:
+              name: Bács-Kiskun Módosított
+                                            
+      responses:
+        '200':
+          description: megye frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CountyResource'
+              example:
+                data:
+                  id: 1
+                  name: Bács-Kiskun Módosított
+                  trees:
+                    - id: 8
+                      species: kocsányos tölgy
+                      circumference: 657
+                      settlement: Hetényegyháza
+                      year: 2003
+                    - id: 52
+                      species: fűz
+                      circumference: 709
+                      settlement: Gemenc
+                      year: 2010
+    delete:
+      tags:
+       - Counties
+      summary: Egy adott megye törlése
+      description: |
+        Törölje ki a megfelelő rekordot az adatbázisból az `id` alapján. 
+      parameters:
+        - name: county
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Megye törölve
+        '404':
+          description: Nem található a keresett elem
+        '500':
+          description: Szerver hiba
+  
+  /api/trees:
+    get:
+      tags:
+       - trees
+      summary: Fák listájának lekérése
+      description: |
+        Visszaadja az összes fa adatait a minta szerint
+      responses:
+        '200':
+          description: Fák listája
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TreeResource'
+              example:
+                data:
+                  - id: 1,
+                    species: közönséges bükk
+                    circumference: 420
+                    settlement: Bükkszentkereszt
+                    year: 2007
+                    county: 
+                      id: 1
+                      name: Borsod-Abaúj-Zemplén
+                  - id: 2,
+                    species: kocsányos tölgy
+                    circumference: 527
+                    settlement: Őcsény
+                    year: 2010
+                    county: 
+                      id: 16
+                      name: Tolna
+    post:
+      tags:
+       - trees
+      summary: Új fa létrehozása
+      description: |
+        A JSON-ként kapott adatokat validálja, majd eltárolja az adatbázisba. 
+        A létrehozott új rekordot adja is vissza a minta szerint!     
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tree'
+            example:
+              species: óriás tölgy
+              circumference: 650
+              settlement: Monostorapáti
+              year: 2015
+              county_id: 18 
+      responses:
+        '201':
+          description: Fa létrehozva
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TreeResource'
+              example:
+                data:
+                  id: 1500
+                  species: óriás tölgy
+                  circumference: 650
+                  settlement: Monostorapáti
+                  year: 2015
+                  brand:
+                    id: 18
+                    name: Veszprém
+        '422':
+          description: Érvénytelen adatok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+  /api/trees/{tree}:
+    get:
+      tags:
+       - trees
+      summary: Egy adott fa lekérése
+      description: |
+        A fa azonosítója alapján keresse meg a megfelelő rekordot, 
+        és adja vissza az adatokat a minta szerint
+      parameters:
+        - name: tree
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Egy adott fa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TreeResource'
+              example:
+                data:
+                  id: 1,
+                  species: közönséges bükk
+                  circumference: 420
+                  settlement: Bükkszentkereszt
+                  year: 2007
+                  county: 
+                    id: 1
+                    name: Borsod-Abaúj-Zemplén
+    put:
+      tags:
+       - trees
+      summary: Egy adott fa frissítése
+      description: |
+        A JSON-ként kapott adatokat validálja,
+        majd tejes egészében cserélje le az adatbázisban található adatokat.
+        
+        A módosított rekordot adja is vissza a minta szerint!     
+      parameters:
+        - name: tree
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tree'
+            example:
+              species: közönséges bükk módosított
+              circumference: 420
+              settlement: Bükkszentkereszt
+              year: 2007
+              county_id: 1                     
+      responses:
+        '200':
+          description: A fa adatai frissítve
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TreeResource'
+              example:
+                data:
+                  id: 1
+                  species: közönséges bükk módosított
+                  circumference: 420
+                  settlement: Bükkszentkereszt
+                  year: 2007                  
+                  county:
+                    id: 1
+                    name: Borsod-Abaúj-Zemplén                    
+        '422':
+          description: Érvénytelen adatok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+    delete:
+      tags:
+       - trees
+      summary: Egy adott fa törlése
+      description: |
+        Törölje ki a megfelelő rekordot az adatbázisból az `id` alapján.
+      parameters:
+        - name: tree
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: A fa törölve
+        '404':
+          description: Nem található a keresett elem
+        '500':
+          description: Szerver hiba
+ 
+components:
+  schemas:
+    County:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: A megye azonosítója
+        name:
+          type: string
+          maxLength: 50
+          description: A megye neve         
+    Tree:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: A fa azonosítója
+        species:
+          type: string
+          maxLength: 50
+          description: A fa fajtájának a neve
+        circumference:
+          type: integer                    
+          description: A fa törzsének kerülete centiméterben
+        settlement:
+          type: string
+          maxLength: 50
+          description: A település neve, amelyhez a fa tartozik
+          required: false
+        year:
+          type: integer                    
+          description: A fa adatainak feljegyzésének éve        
+        county_id:
+          type: integer          
+          description: A megye azonosítója
+    CountyResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: A megye azonosítója
+        name:
+          type: string
+          maxLength: 50
+          description: A megye neve            
+        trees:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tree'
+          description: A megyében ültetett és feljegyzett fák adatai
+          required: false   
+    TreeResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: A fa azonosítója
+        species:
+          type: string
+          maxLength: 50
+          description: A fa fajtájának a neve
+        circumference:
+          type: integer                    
+          description: A fa törzsének kerülete centiméterben
+        settlement:
+          type: string
+          maxLength: 50
+          description: A település neve, amelyhez a fa tartozik
+          required: false
+        year:
+          type: integer                    
+          description: A fa adatainak feljegyzésének éve
+        brand:
+          type: object
+          $ref: '#/components/schemas/CountyResource'          
+          description: A megye
